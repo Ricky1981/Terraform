@@ -13,8 +13,8 @@ provider "aws" {
   # On selectionne la region de Paris
   region = "eu-west-3"
   # Authentification par jeton... Mais ce n'est pas le plus "secure"
-  access_key = "AKIAIUYOY2JDXJWBSWDQ"
-  secret_key = "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"
+  access_key = "AKIAIMQK2L7HYPRED6QA"
+  secret_key = "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"
 }
 
 # Voici les différentes étapes que nous créerons lors de ce projet
@@ -112,7 +112,7 @@ resource "aws_subnet" "wordpress-subnet-2" {
 }
 
 #4. Creation de l'interface reseau avec une IP dans le sous-réseau que nous venons de créer à l'étape 3 
-resource "aws_network_interface" "wordpress-network_interface" {
+resource "aws_network_interface" "wordpress-network_interface-1" {
   subnet_id       = aws_subnet.wordpress-subnet-1.id
   private_ips     = ["10.0.1.50"]
   # Ajout du groupe de securité
@@ -121,6 +121,22 @@ resource "aws_network_interface" "wordpress-network_interface" {
     Name = "Interface Réseau de WordPress"
   }
 }
+
+resource "aws_network_interface" "wordpress-network_interface-2" {
+  subnet_id       = aws_subnet.wordpress-subnet-2.id
+  private_ips     = ["10.0.2.50"]
+  # Ajout du groupe de securité
+  security_groups = [aws_security_group.wordpress-security.id]
+  tags = {
+    Name = "Interface Réseau de WordPress"
+  }
+}
+
+# resource "aws_network_interface_attachment" "test" {
+#   instance_id          = aws_instance.MonPremierServeur_EC2.id
+#   network_interface_id = aws_network_interface.wordpress-network_interface-2.id
+#   device_index         = 1
+# }
 
 
 # Configuration de notre premiere instance EC2 (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance)
@@ -132,7 +148,8 @@ resource "aws_instance" "MonPremierServeur_EC2" {
     # Optionnelle mais on le met quand meme
     availability_zone = "eu-west-3a"
     network_interface {
-      network_interface_id = aws_network_interface.wordpress-network_interface.id
+      delete_on_termination = false
+      network_interface_id = aws_network_interface.wordpress-network_interface-1.id
       device_index         = 0
     }
     # # Ajout du groupe de sécurité car prend le groupe par défaut d'AWS --> ne se met pas là car sinon erreur "network_interface": conflicts with security_groups. On le met dans la ressource aws_network_interface
@@ -142,6 +159,8 @@ resource "aws_instance" "MonPremierServeur_EC2" {
       Name = "ubuntu"
     }  
 }
+
+
 
 # Configuration de notre instance RDS (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance)
 resource "aws_db_instance" "MonPremierServeur_RDS" {
@@ -206,10 +225,16 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.wordpress-route-table.id
 }
 
+# Puis on fait une association entre notre sous-reseau (j'en laisse un de côté qui ne me sert uniquement pour RDS) avec ma table de routage
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.wordpress-subnet-2.id
+  route_table_id = aws_route_table.wordpress-route-table.id
+}
+
 # Il nous manque une IP Elastic qu'on va "lier" à notre interface reseau (aws_network_interface)
 resource "aws_eip" "ip_public" {
   vpc                       = true
-  network_interface         = aws_network_interface.wordpress-network_interface.id
+  network_interface         = aws_network_interface.wordpress-network_interface-1.id
   associate_with_private_ip = "10.0.1.50"
   # Dans la doc(https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip), on doit indiquer que notre IP publique dépends de notre gateway. On rajoute donc le flag "depends_on"
   depends_on = [aws_internet_gateway.gw]
@@ -224,7 +249,7 @@ resource "aws_route53_zone" "route53-zone" {
 
 # Puis le record (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)
 resource "aws_route53_record" "projet06tk" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.route53-zone.zone_id
   name    = "projet07.tk"
   type    = "A"
   ttl     = "300"
@@ -232,7 +257,7 @@ resource "aws_route53_record" "projet06tk" {
 }
 
 resource "aws_route53_record" "wwwprojet06tk" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.route53-zone.zone_id
   name    = "www.projet07.tk"
   type    = "A"
   ttl     = "300"
@@ -254,6 +279,60 @@ resource "aws_route53_record" "route53-zone" {
   ]
 }
 
+# Create a new load balancer (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elb#instances)
+resource "aws_elb" "applicationLoadBalancer" {
+  name               = "wordpress-alb"
+  # availability_zones = ["eu-west-3a", "eu-west-3b"]
+
+  # access_logs {
+  #   bucket        = "foo"
+  #   bucket_prefix = "bar"
+  #   interval      = 60
+  # }
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  # listener {
+  #   instance_port      = 8000
+  #   instance_protocol  = "http"
+  #   lb_port            = 443
+  #   lb_protocol        = "https"
+  #   ssl_certificate_id = "arn:aws:iam::123456789012:server-certificate/certName"
+  # }
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:80/"
+    interval            = 30
+  }
+
+  instances                   = [aws_instance.MonPremierServeur_EC2.id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+  security_groups = [
+    aws_security_group.wordpress-security.id
+  ]
+
+  subnets = [ 
+    aws_subnet.wordpress-subnet-1.id,
+    aws_subnet.wordpress-subnet-2.id 
+  ]
+
+  tags = {
+    Name = "wordpress-elb"
+  }
+}
+
 output "public_ip" {
     value = aws_eip.ip_public.public_ip
 }
@@ -267,5 +346,14 @@ output "RDS_endpoint" {
 }
 
 output "ssh_connection" {
-  value = "ssh -i "main-key.pem" ubuntu@ ${aws_eip.ip_public.public_dns}"
+  value = "ssh -i main-key.pem ubuntu@${aws_eip.ip_public.public_dns}"
+}
+
+output "Route53_NameServer" {
+  value = <<EOT
+  ${aws_route53_zone.route53-zone.name_servers[0]}
+  ${aws_route53_zone.route53-zone.name_servers[1]}
+  ${aws_route53_zone.route53-zone.name_servers[2]}
+  ${aws_route53_zone.route53-zone.name_servers[3]}
+  EOT
 }
