@@ -1,0 +1,9 @@
+---
+- name: "WordPress apache configuration"
+  hosts: ec2
+  # L'option "Gater_facts" à "no" permet d'indiquer de ne pas recuperer les variables d'environnement de ec2 ce qui permet de gagner du temps
+  gather_facts: no
+  tags: "wordpress"
+  roles:
+    - role: "wordpress/confapache"
+    - role: "wordpress/confwordpress"

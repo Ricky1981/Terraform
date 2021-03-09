@@ -1,31 +1,26 @@
-#6. Creation de l'interface reseau avec une IP dans le sous-réseau que nous venons de créer à l'étape 3 
-# Cette interface sera celle qui disposera d'une IP Publique qui pointera sur EC2
-resource "aws_network_interface" "wordpress-network_interface-1" {
-  description = "wordpress-network_interface-1"
-  subnet_id   = aws_subnet.public.id
-  private_ips = ["10.0.1.50"]
-  # Ajout du groupe de securité crée à l'étape 2
-  security_groups = [aws_security_group.wordpress-security.id]
-  tags = {
-    Name = "Interface Réseau de WordPress - Subnet - 1 - Contient l'IP public de EC2"
-  }
-}
-
-
-
-/* Routing table for private subnet */
+# On crée une table de routage pour notre réseau privé
 resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.wordpress-vpc.id
+  vpc_id = aws_vpc.wordpress.id
   tags = {
     Name = "private-route-table"
   }
 }
 
+resource "aws_route" "private" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat-gw.id
+}
 
+# Puis on associe notre table de routage privée avec notre sous-reseau privée
+resource "aws_route_table_association" "private" {
+  subnet_id      = aws_subnet.prive.id
+  route_table_id = aws_route_table.private.id
+}
 
-/* Routing table for public subnet */
+# On crée une table de routage pour notre réseau public
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.wordpress-vpc.id
+  vpc_id = aws_vpc.wordpress.id
   #   route {
   #     # On autorise tout le traffic  
   #     cidr_block = "0.0.0.0/0"
@@ -36,23 +31,29 @@ resource "aws_route_table" "public" {
     Name = "public-route-table"
   }
 }
-resource "aws_route" "public_internet_gateway" {
+
+resource "aws_route" "public" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.gw.id
 }
-resource "aws_route" "private_nat_gateway" {
-  route_table_id         = aws_route_table.private.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat-gw.id
-}
 
-/* Route table associations */
+# Puis on associe notre table de routage public avec notre sous-reseau public
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
-resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.prive.id
-  route_table_id = aws_route_table.private.id
-}
+
+
+# #6. Creation de l'interface reseau avec une IP dans le sous-réseau que nous venons de créer à l'étape 3 
+# # Cette interface sera celle qui disposera d'une IP Publique qui pointera sur EC2
+# resource "aws_network_interface" "wordpress" {
+#   description = "wordpress-network_interface"
+#   subnet_id   = aws_subnet.public.id
+#   private_ips = ["10.0.1.50"]
+#   # Ajout du groupe de securité crée à l'étape 2
+#   security_groups = [aws_security_group.wordpress.id]
+#   tags = {
+#     Name = "Interface Réseau de WordPress - Subnet - Public"
+#   }
+# }

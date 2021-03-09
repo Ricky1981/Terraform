@@ -1,0 +1,66 @@
+---
+
+- name: Creates database for WordPress
+  mysql_db:
+    login_host: "{{ mysql_host }}"
+    name: "{{ mysql_db }}"
+    state: present
+    login_user: "{{ mysql_user }}"
+    login_password: "{{ mysql_password }}"
+
+#1. Création du repertoire pour l’installation des fichiers de WordPress 
+- name: "wordpress directory" 
+  file: 
+    # Indique le chemin du répertoire à créer
+    path: "{{wordpress_directory}}" 
+    # Indique le propriétaire et le groupe du répertoire
+    owner: "www-data"  
+    group: "www-data"  
+    # Indique de créer un répertoire
+    state: directory  
+
+#2. Décompresse le fichier source archive de WordPress et le formate sans extension  
+- name: "uncompress wordpress archive"  
+  unarchive:  
+    # Indique l’adresse de l’archive à télécharger
+    src: "{{wordpress_archive_url}}"  
+    # Indique le chemin où doit être décompressée l’archive
+    dest: "{{wordpress_directory}}"  
+    owner: "www-data"  
+    group: "www-data"  
+    # Indique que la source est externe. Si on ne le met pas on a une erreur car il tente de chercher sur "/home/user-ansible/wordPress/roles/wordpress/confapache/files/https://wordpress.org/latest.tar.gz"
+    remote_src: yes  
+
+#3. On pousse notre fichier wp-config qui contient les paramètres de connexion à notre BDD
+- name: Set up wp-config
+  template:
+    src: "files/wp-config.php.j2"
+    dest: "{{wordpress_directory}}/wordpress/wp-config.php"
+
+- name: Set ownership
+  file:
+    path: "{{wordpress_directory}}/wordpress"
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: www-data
+    
+- name: Set permissions for directories
+  shell: "/usr/bin/find {{wordpress_directory}}/wordpress/* -type d -exec chmod 750 {} \\;"
+
+- name: Set permissions for files
+  shell: "/usr/bin/find {{wordpress_directory}}/wordpress/ -type f -exec chmod 640 {} \\;"
+
+# - name: Set ownership
+#   file:
+#     path: "/var/www/{{ http_host }}"
+#     state: directory
+#     recurse: yes
+#     owner: www-data
+#     group: www-data
+    
+# - name: Set permissions for directories
+#   shell: "/usr/bin/find /var/www/{{ http_host }}/wordpress/ -type d -exec chmod 750 {} \\;"
+
+# - name: Set permissions for files
+#   shell: "/usr/bin/find /var/www/{{ http_host }}/wordpress/ -type f -exec chmod 640 {} \\;"

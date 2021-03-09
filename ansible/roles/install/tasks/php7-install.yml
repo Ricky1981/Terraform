@@ -1,0 +1,15 @@
+---
+
+#1. Cette tâche installe PHP et ses extensions avec le module "apt"
+- name: "install php packages" 
+  apt: 
+    # Le name indique l’ensemble des paquets à installer
+    name: "php,php-mysql,php-xml" 
+    # Indique qu’il faut installer les dernières versions disponibles des paquets ;
+    state: latest 
+  # # # Pour info mais on ne va pas l'utiliser dans notre projet : Indique d’utiliser le dépôt remi-php70 pour les installer 
+  # # enablerepo: "remi-php70" 
+  # Force le changement d'état, c’est-à-dire qu'avec cette condition à yes, l'exécution de la tâche provoquera un changement  
+  changed_when: yes 
+  # Indique que si la tâche change d'état (et uniquement si la tâche a engendré un changement), notify fait appel au handler "apache restart" pour relancer le service Apache.
+  notify: "apache restart" 

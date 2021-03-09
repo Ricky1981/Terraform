@@ -19,7 +19,7 @@ provider "aws" {
 }
 
 #1. Creation du VPC 
-resource "aws_vpc" "wordpress-vpc" {
+resource "aws_vpc" "wordpress" {
   cidr_block           = "10.0.0.0/22"
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -28,13 +28,11 @@ resource "aws_vpc" "wordpress-vpc" {
   }
 }
 
-
-
 #3. Creation du subnet public
 resource "aws_subnet" "public" {
-  # depends_on = [aws_vpc.wordpress-vpc]
+  # depends_on = [aws_vpc.wordpress]
   # On pointe sur le VPC que nous avons créée
-  vpc_id     = aws_vpc.wordpress-vpc.id
+  vpc_id     = aws_vpc.wordpress.id
   cidr_block = "10.0.1.0/24"
   # Optionnelle
   availability_zone = "eu-west-3a"
@@ -48,12 +46,12 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "prive" {
-  depends_on = [
-    aws_vpc.wordpress-vpc,
-    aws_subnet.public
-  ]
+  # depends_on = [
+  #   aws_vpc.wordpress,
+  #   aws_subnet.public
+  # ]
   # On pointe sur le VPC que nous avons créée
-  vpc_id     = aws_vpc.wordpress-vpc.id
+  vpc_id     = aws_vpc.wordpress.id
   cidr_block = "10.0.2.0/24"
   # Optionnelle
   availability_zone       = "eu-west-3b"
@@ -64,16 +62,16 @@ resource "aws_subnet" "prive" {
 }
 
 #2. Creation du Group de Securité pour autoriser les ports 22, 80, 443 et 3306 
-resource "aws_security_group" "wordpress-security" {
-  depends_on = [
-    aws_vpc.wordpress-vpc,
-    aws_subnet.public,
-    aws_subnet.prive
-  ]
+resource "aws_security_group" "wordpress" {
+  # depends_on = [
+  #   aws_vpc.wordpress,
+  #   aws_subnet.public,
+  #   aws_subnet.prive
+  # ]
 
   name        = "allow_web_traffic"
   description = "Allow Web inbound traffic"
-  vpc_id      = aws_vpc.wordpress-vpc.id
+  vpc_id      = aws_vpc.wordpress.id
 
   # ingress {
   #   description = "HTTPS"
@@ -84,13 +82,13 @@ resource "aws_security_group" "wordpress-security" {
   #   cidr_blocks = ["0.0.0.0/0"]
   # }
 
-  # ingress {
-  #   description = "HTTP"
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     description = "SSH"
@@ -100,13 +98,13 @@ resource "aws_security_group" "wordpress-security" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # ingress {
-  #   description = "MySQL"
-  #   from_port   = 3306
-  #   to_port     = 3306
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "MySQL"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port = 0
@@ -123,16 +121,16 @@ resource "aws_security_group" "wordpress-security" {
 }
 
 #2. Creation du Group de Securité pour notre bastion 
-resource "aws_security_group" "bastion-security" {
-  depends_on = [
-    aws_vpc.wordpress-vpc,
-    aws_subnet.public,
-    aws_subnet.prive
-  ]
+resource "aws_security_group" "bastion" {
+  # depends_on = [
+  #   aws_vpc.wordpress,
+  #   aws_subnet.public,
+  #   aws_subnet.prive
+  # ]
 
   name        = "bastion_allow_traffic"
   description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.wordpress-vpc.id
+  vpc_id      = aws_vpc.wordpress.id
 
   ingress {
     description = "Bastion SSH"
@@ -159,8 +157,8 @@ resource "aws_security_group" "bastion-security" {
 
 # # create VPC Network access control list
 # resource "aws_network_acl" "wordpress-acl" {
-#   #default_network_acl_id = aws_vpc.wordpress-vpc.default_network_acl_id
-#   vpc_id     = aws_vpc.wordpress-vpc.id
+#   #default_network_acl_id = aws_vpc.wordpress.default_network_acl_id
+#   vpc_id     = aws_vpc.wordpress.id
 #   subnet_ids = [aws_subnet.wordpress-subnet-1.id, aws_subnet.wordpress-subnet-2.id, aws_subnet.wordpress-subnet-3.id]
 
 #   ingress {

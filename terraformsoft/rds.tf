@@ -1,5 +1,5 @@
 #9. Configuration de notre instance RDS (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance)
-resource "aws_db_instance" "MonPremierServeur_RDS" {
+resource "aws_db_instance" "wordpress" {
   identifier        = "mysql"
   allocated_storage = 20
   storage_type      = "gp2"
@@ -13,7 +13,7 @@ resource "aws_db_instance" "MonPremierServeur_RDS" {
   password             = "adminadmin"
   parameter_group_name = "default.mysql5.7"
   # On rajoute notre option Group crée à l'étape 8
-  option_group_name = aws_db_option_group.RDS-OptionGroup.id
+  option_group_name = aws_db_option_group.wordpress.id
   # Permet de pouvoir supprimer l'instance sans faire de SnapShot --> pratique lorsqu'on fait un "terraform destroy"
   skip_final_snapshot = true
   # # Permet de se connecter en dehors du VPC ce qui est mon cas avec MySQL WorkBench
@@ -21,7 +21,7 @@ resource "aws_db_instance" "MonPremierServeur_RDS" {
   # Optionnelle mais on le met quand meme
   availability_zone = "eu-west-3a"
   # On lie notre instance avec notre groupe de securité crée à l'étape 2
-  vpc_security_group_ids = [aws_security_group.wordpress-security.id]
+  vpc_security_group_ids = [aws_security_group.wordpress.id]
   # Ajout du group de l'étape 5 qui contient les 2 sous réseaux subnet-1 et subnet-2
   db_subnet_group_name = aws_db_subnet_group.default.id
 }
@@ -37,7 +37,7 @@ resource "aws_db_subnet_group" "default" {
 
 #8. Configuration d'une option Group qui sera necessaire pour MemCached
 # (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_option_group)
-resource "aws_db_option_group" "RDS-OptionGroup" {
+resource "aws_db_option_group" "wordpress" {
   name                     = "wordpress-option-group"
   option_group_description = "WordPress Option Group"
   engine_name              = "mysql"
@@ -47,7 +47,7 @@ resource "aws_db_option_group" "RDS-OptionGroup" {
   option {
     option_name                    = "MEMCACHED"
     port                           = 11211
-    vpc_security_group_memberships = [aws_security_group.wordpress-security.id]
+    vpc_security_group_memberships = [aws_security_group.wordpress.id]
 
     option_settings {
       name  = "BACKLOG_QUEUE_LIMIT"

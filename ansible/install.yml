@@ -1,0 +1,11 @@
+---
+# On indique le nom du jeu d'instructions 
+- name: "Installation apache" 
+  # On indique le node concerné 
+  hosts: ec2   
+  # On lance une section "rôles" 
+  roles: 
+    # Puis on aindique le rôle à lancer 
+    - role: "install" 
+      # On indique la valeur de la variable "php_install" 
+      php_install: yes 

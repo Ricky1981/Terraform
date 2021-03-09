@@ -1,0 +1,34 @@
+---
+# # tasks file for apache
+
+#1. Cette tâche permet d’installer Apache (httpd) à l’aide du module apt
+- name: "apache installation"
+  apt:
+    # Le name: "apache2" indique le paquet concerné
+    name: "apache2"
+    # Le state: "present" spécifie qu’il faut l’install
+    state: "present"
+
+# - hosts: ec2
+#   tasks:
+#     - name: run echo command
+#       command: /bin/echo hello sammy
+
+
+
+#2. Cette tâche active le service Apache avec le module “service”
+- name: "apache service activation"
+  service:
+    # Le name: "apache2" indique le service concerné, 
+    name: "apache2"
+    # Le state: "started" indique que le service sera démarré
+    state: "started"
+    # Le enabled: yes indique que le service sera activé.
+    enabled: yes
+
+#3. Cette tâche fait appel à un autre fichier de configuration pour installer PHP. Elle est exécutée uniquement si la variable php_install est à vraie (par défaut, elle est à faux)
+- name: "install php7 packages"
+  # La tâche fait appel avec l’option “include” au fichier php7-install.yml qui est placé dans le répertoire tasks à coté de main.yml.
+  include: "php7-install.yml"
+  # La condition when avec le filtre (php_install|default(False)|bool) permettent de conditionner l’installation de PHP.
+  when: php_install|default(False)|bool

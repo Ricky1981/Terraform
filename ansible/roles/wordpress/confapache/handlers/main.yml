@@ -1,0 +1,7 @@
+---
+# handlers file for apache
+# Le module service est utilisé pour relancer le service httpd avec l’option state: "restarted".
+- name: "apache restart"
+  service:
+    name: "apache2"
+    state: "restarted"

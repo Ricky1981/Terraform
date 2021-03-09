@@ -1,0 +1,29 @@
+---  
+ 
+
+
+#4. On rajoute la conf du VirtualHost
+- name: Set up Apache VirtualHost
+  template:
+    src: "files/apache.conf.j2"
+    dest: "/etc/apache2/sites-available/{{http_conf}}"
+  notify: "apache restart"
+  # Les tags permettent de lancer une partie specifique du playbook. Pour nous, ca ne servira pas à grand chose...
+  # tags: [ apache ]
+
+# Puis on lance le reste de la conf apache
+- name: Enable rewrite module
+  shell: /usr/sbin/a2enmod rewrite
+  # roles:
+  #   role: apache
+  notify: "apache restart"
+
+- name: Enable new site
+  shell: /usr/sbin/a2ensite {{ http_conf }}
+  notify: "apache restart"
+
+- name: Disable default Apache site
+  shell: /usr/sbin/a2dissite 000-default.conf
+  notify: "apache restart"
+
+

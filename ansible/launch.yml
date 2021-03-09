@@ -1,0 +1,6 @@
+---
+- name: Apache / PHP Installation
+  import_playbook: install.yml
+
+- name: Apache / WordPress Configuration
+  import_playbook: conf.yml

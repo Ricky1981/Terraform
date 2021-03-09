@@ -1,0 +1,32 @@
+---
+#HTTP Settings
+http_host: "projet07.tk"
+http_conf: "wordpress.conf"
+http_port: "80"
+http_name: "wordpress"
+
+# nom du WordPress et son titre
+wordpress_name: "wordpress"
+wordpress_title: "wordpressTitle"
+
+# Paramètres BDD
+mysql_db: "wordpress"
+mysql_user: "admin"
+# mysql_password: "adminadmin"
+# On securise un peu en lanant la commande : ansible-vault encrypt_string 'pass' --name 'mysql_password'
+mysql_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          35613862623937396262383236376339383661323461383265396137303434613235326238363534
+          6266643833373365663332386233393339326363346339630a343437383238653164323063646262
+          32326430396630616631656566663734363833316238336361633937393335303764303735363363
+          6430613037613336360a366632653063636665636132353331346338343465623361383833633465
+          6137
+
+mysql_host: "mysql.cmhw09ntrgxw.eu-west-3.rds.amazonaws.com"
+
+# l’emplacement du répertoire d'installation de wordpress
+wordpress_directory: "/var/www/html/"
+
+# l’url des sources de WordPress
+wordpress_archive_url: "https://wordpress.org/latest.tar.gz"
+

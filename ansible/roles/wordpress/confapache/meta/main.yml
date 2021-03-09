@@ -1,0 +1,8 @@
+---
+dependencies:
+  # - role: "install"
+  #   # Si on souhaite modifier la valeur par défaut présente dans le rôle apache on peut faire ca.
+  #   vars: 
+  #     http_conf: "test" 
+
+  - role: "wordpress/commun"
