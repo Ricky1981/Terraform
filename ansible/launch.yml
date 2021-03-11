@@ -1,4 +1,10 @@
 ---
+- name: Bastion / Configuration
+  import_playbook: 01-bastion.yml
+
+- name: Nodes / Configuration
+  import_playbook: userNode.yml
+
 - name: Apache / PHP Installation
   import_playbook: install.yml
 

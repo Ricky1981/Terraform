@@ -13,12 +13,17 @@ resource "aws_key_pair" "ssh" {
 
 }
 
+
+
 # resource "null_resource" "example1" {
 #   depends_on = [ aws_key_pair.ssh ]
 #   provisioner "local-exec" {
 #     command = "echo ${tls_private_key.ssh.private_key_pem} > key3.txt"
 #   }
 # }
+
+
+
 
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -86,7 +91,7 @@ resource "aws_instance" "bastion" {
 
   # Keyname and security group are obtained from the reference of their instances created above!
   key_name = aws_key_pair.ssh.key_name
-
+  # key_name = data.template_file.userdata
   # Security group ID's
   # vpc_security_group_ids = [aws_security_group.bastion-security.id]
   security_groups = [aws_security_group.bastion.id]
@@ -108,6 +113,8 @@ resource "aws_instance" "bastion" {
 		#! /bin/bash
     sudo apt-get update
 	EOF
+
+  # templatefile("${path.module}/templates/userdata.yml",var.region)
 
 
 

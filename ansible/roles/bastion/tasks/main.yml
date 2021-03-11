@@ -1,0 +1,56 @@
+---
+# - name: Mis à jour du hosts local
+#   copy:
+#     src: /home/vagrant/terraformsoft/files/hosts
+#     dest: /etc/hosts
+#     owner: root
+#     group: root
+#     mode: '0644'
+#     delegate_to: localhost
+
+- name: Mise à jour de la liste des paquets
+  raw: "sudo apt update" 
+
+- name: Installation de Python
+  raw: "sudo apt install -y python3 python3-pip"
+ 
+- name: Installation PyMySQL via pip
+  raw: "python3 -m pip install PyMySQL"
+
+- name: Création de l'utilisateur user-ansible sur les nodes
+  user:
+    name: "user-ansible"
+    # Obtenu grâce à la commande suivante : ansible localhost -i inventaire.ini -m debug -a "msg={{ 'admin' | password_hash('sha512', 'sceretsalt') }}"
+    password: "$6$sceretsalt$d7pclQAiYbRuMCnMzqzqlgtMk0zrz7Z8aYax/rbnrSRiGznKalBTUg6SGtKoQELFUL10ndzXjl1c5w.UfCxoO0"
+
+- name: Ajout des droits sudo à l'utilisateur user-ansible
+  raw: "sudo usermod -aG sudo user-ansible"
+
+- name: Modification /etc/hosts
+  copy:
+    src: /home/vagrant/terraformsoft/files/bastionhosts
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ajout de la clé publique sur les nodes
+  authorized_key:
+    user: user-ansible
+    state: present
+    key: "{{ lookup('file', '/home/vagrant/.ssh/id_ecdsa.pub') }}"
+
+- name: Ajout de la clé publique sur les nodes
+  authorized_key:
+    user: ubuntu
+    state: present
+    key: "{{ lookup('file', '/home/vagrant/.ssh/id_ecdsa.pub') }}"
+
+- name: Transfert de la clé privé
+  copy:
+    src: /home/vagrant/terraformsoft/files/key
+    dest: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: '0700'
+

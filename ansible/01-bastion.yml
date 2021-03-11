@@ -1,9 +1,9 @@
 ---
 # On indique le nom du jeu d'instructions 
-- name: "Installation Nodes" 
+- name: "Installation bastion" 
   # On indique le node concerné 
-  hosts: ec2   
+  hosts: jump   
   # On lance une section "rôles" 
   roles: 
     # Puis on aindique le rôle à lancer 
-    - role: "userNode" 
+    - role: "bastion" 
