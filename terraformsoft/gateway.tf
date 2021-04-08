@@ -36,3 +36,8 @@ resource "aws_eip" "nat" {
   }
 
 }
+
+resource "aws_eip" "route53" {
+  # instance = aws_instance.web.id
+  vpc = true
+}

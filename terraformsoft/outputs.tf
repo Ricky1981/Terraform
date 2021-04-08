@@ -15,6 +15,20 @@ output "bastion_ip" {
   value = aws_eip.bastion.public_ip
 }
 
+output "Route53_NameServer" {
+  value = <<EOT
+  ${aws_route53_zone.wordpress.name_servers[0]}
+  ${aws_route53_zone.wordpress.name_servers[1]}
+  ${aws_route53_zone.wordpress.name_servers[2]}
+  ${aws_route53_zone.wordpress.name_servers[3]}
+  EOT
+}
+
+# output "dnsELB" {
+# value = aws_elb.wordpress.dns_name
+# }
+
+
 # output "ssh_private_key_pem" {
 #   value = tls_private_key.ssh.private_key_pem
 # }

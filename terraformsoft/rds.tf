@@ -1,6 +1,6 @@
 #9. Configuration de notre instance RDS (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance)
 resource "aws_db_instance" "wordpress" {
-  identifier        = "mysql"
+  identifier        = "wordpress"
   allocated_storage = 20
   storage_type      = "gp2"
   engine            = "mysql"

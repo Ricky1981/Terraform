@@ -22,8 +22,8 @@
   shell: /usr/sbin/a2ensite {{ http_conf }}
   notify: "apache restart"
 
-- name: Disable default Apache site
-  shell: /usr/sbin/a2dissite 000-default.conf
-  notify: "apache restart"
+# - name: Disable default Apache site
+#   shell: /usr/sbin/a2dissite 000-default.conf
+#   notify: "apache restart"
 
 
