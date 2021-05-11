@@ -48,3 +48,11 @@ output "Route53_NameServer" {
 # output "userdata" {
 #   value = "\n${data.template_file.init.*.rendered}"
 # }
+
+output "account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+output "cloudFront" {
+  value = aws_cloudfront_distribution.wordpress.domain_name
+}

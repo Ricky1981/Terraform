@@ -1,6 +1,6 @@
 ---
 #HTTP Settings
-http_host: "projet07.tk"
+http_host: "${cloudfont_domain_name}"
 http_conf: "wordpress.conf"
 http_port: "80"
 http_name: "wordpress"

@@ -36,6 +36,7 @@ resource "aws_subnet" "public" {
   cidr_block = "10.0.1.0/24"
   # Optionnelle
   availability_zone = "eu-west-3a"
+  map_public_ip_on_launch = true
 
   # # Enabling automatic public IP assignment on instance launch!
   # map_public_ip_on_launch = true
@@ -55,9 +56,25 @@ resource "aws_subnet" "prive" {
   cidr_block = "10.0.2.0/24"
   # Optionnelle
   availability_zone       = "eu-west-3b"
-  map_public_ip_on_launch = false
+  #map_public_ip_on_launch = true
   tags = {
     Name = "wordpress-subnet-private"
+  }
+}
+
+resource "aws_subnet" "priveelb" {
+  # depends_on = [
+  #   aws_vpc.wordpress,
+  #   aws_subnet.public
+  # ]
+  # On pointe sur le VPC que nous avons créée
+  vpc_id     = aws_vpc.wordpress.id
+  cidr_block = "10.0.3.0/24"
+  # Optionnelle
+  availability_zone       = "eu-west-3b"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "wordpress-subnet-private-elb"
   }
 }
 

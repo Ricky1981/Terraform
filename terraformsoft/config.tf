@@ -1,3 +1,7 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 data "template_file" "privatekey" {
   template = file("${path.module}/templates/key")
 
@@ -36,6 +40,7 @@ data "template_file" "ansible" {
 
   vars = {
     mysql_host = aws_db_instance.wordpress.address
+    cloudfont_domain_name = aws_cloudfront_distribution.wordpress.domain_name
   }
 }
 

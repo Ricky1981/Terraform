@@ -15,7 +15,7 @@ resource "aws_cloudfront_distribution" "wordpress" {
   enabled = true
   #   is_ipv6_enabled     = true
   comment             = "Some comment"
-  default_root_object = "index.html"
+  default_root_object = "index.php"
 
   viewer_certificate {
     cloudfront_default_certificate = true

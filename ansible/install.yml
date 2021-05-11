@@ -9,3 +9,5 @@
     - role: "install" 
       # On indique la valeur de la variable "php_install" 
       php_install: yes 
+      # # On indique la valeur de la variable "elk_log" qui nous sert dans le projet 10. 
+      # elk_log: yes

@@ -43,8 +43,8 @@ resource "aws_elb" "wordpress" {
   ]
 
   subnets = [
-    aws_subnet.public.id,
-    aws_subnet.prive.id
+    aws_subnet.priveelb.id,
+    aws_subnet.public.id
   ]
 
   tags = {
