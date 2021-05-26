@@ -15,15 +15,15 @@ resource "aws_cloudfront_distribution" "wordpress" {
   enabled = true
   #   is_ipv6_enabled     = true
   comment             = "Some comment"
-  default_root_object = "index.php"
+  #default_root_object = "index.php"
 
   viewer_certificate {
     cloudfront_default_certificate = true
   }
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = "ELB-${aws_elb.wordpress.name}"
 
     forwarded_values {

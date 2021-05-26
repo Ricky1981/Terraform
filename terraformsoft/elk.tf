@@ -15,7 +15,7 @@
 #     {
 #     "Version": "2012-10-17",
 #     "Statement": [
-#         {
+#       {
 #         "Action": "es:*",
 #         "Principal": "*",
 #         "Effect": "Allow",
@@ -23,7 +23,16 @@
 #         "Condition": {
 #             "IpAddress": {"aws:SourceIp": ["${var.ipPerso}"]}
 #         }
+#       },
+#       {
+#         "Action": "es:*",
+#         "Principal": "*",
+#         "Effect": "Allow",
+#         "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.elkdomain}/*",
+#         "Condition": {
+#             "IpAddress": {"aws:SourceIp": ["${aws_eip.nat.public_ip}"]}
 #         }
+#       }
 #     ]
 #     }
 #     POLICY
